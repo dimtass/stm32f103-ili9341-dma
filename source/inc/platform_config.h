@@ -20,7 +20,9 @@
  */
 typedef enum {
 	TRACE_LEVEL_DEFAULT = 	(1 << 0),
-	TRACE_LEVEL_ADC = 	(1 << 1),
+	TRACE_LEVEL_LCD = 		(1 << 1),
+	TRACE_LEVEL_TOUCH = 	(1 << 2),
+	TRACE_LEVEL_UART = 		(1 << 3),
 } en_trace_level;
 
 #define DEBUG_TRACE
@@ -33,42 +35,27 @@ typedef enum {
 #define TRACEL(X,Y)
 #endif
 
-/* LED patterns */
-enum {
-	LED_PATTERN_IDLE = 0b10100000,
-};
-
-/* GPIOA */
-#define ADC1_PIN 		GPIO_Pin_0
-#define ADC1_GPIO_Port 	GPIOA
-#define ADC2_PIN 		GPIO_Pin_1
-#define ADC2_GPIO_Port 	GPIOA
 
 /* GPIOC */
 #define PIN_STATUS_LED 		GPIO_Pin_13
 #define PORT_STATUS_LED 	GPIOC
 
+/* on reset all of these will be set to 0 */
 struct tp_glb {
-	volatile uint16_t tmr_1ms;
-	volatile uint16_t tmr_10ms;
-	volatile uint16_t tmr_1000ms;
-	volatile uint16_t fps;
-	volatile uint8_t fps_done;
+	uint16_t	tmr_10ms;
+	uint16_t 	tmr_1000ms;
+	uint8_t		mode;
+	uint16_t 	fps_cntr;
+	uint8_t 	fps;
+	uint8_t 	fps_show;
+	uint8_t		trace_fps;
+	uint8_t		touch_irq;
+	uint8_t		touch_busy;
+	uint8_t		touch_trace;
 	en_trace_level trace_levels;
-
-	/* ADC values */
-	volatile uint32_t 	adc1_temp;
-	volatile uint16_t 	adc1_val;
-	volatile uint8_t	adc1_counter;
-	volatile uint8_t	adc1_ready;
-
-	volatile uint32_t 	adc2_temp;
-	volatile uint16_t 	adc2_val;
-	volatile uint8_t	adc2_counter;
-	volatile uint8_t	adc2_ready;
 };
 
-extern struct tp_glb glb;
+extern volatile struct tp_glb glb;
 
 static inline void set_trace_level(en_trace_level level, uint8_t enable)
 {

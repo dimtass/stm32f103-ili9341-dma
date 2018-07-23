@@ -6,7 +6,7 @@ echo "Building the project in Linux environment"
 : ${ARCHITECTURE:=stm32}
 
 # select to create eclipse project files
-: ${ECLIPSE_IDE:=false}
+: ${ECLIPSE:=false}
 
 # select to clean previous builds
 : ${CLEANBUILD:=false}

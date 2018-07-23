@@ -22,14 +22,17 @@ include_directories(
         ${LIBS}/CMSIS/device/
         ${LIBS}/ILI9341/
         ${LIBS}/ILI9341/fonts
+        ${LIBS}/xpt2046-touch/
         inc/
 )
 set(PERIPH_LIB_SRC ${LIBS}/StdPeriph_Driver/src/)
 set(ILI9341_SRC ${LIBS}/ILI9341/)
+set(XPT2046_SRC ${LIBS}/xpt2046-touch/)
 
 set(SRC_FILES
         # STM32 standard periph drivers
         ${PERIPH_LIB_SRC}/misc.c
+        ${PERIPH_LIB_SRC}/stm32f10x_exti.c
         ${PERIPH_LIB_SRC}/stm32f10x_flash.c
         ${PERIPH_LIB_SRC}/stm32f10x_rcc.c
         ${PERIPH_LIB_SRC}/stm32f10x_gpio.c
@@ -41,6 +44,10 @@ set(SRC_FILES
         ${ILI9341_SRC}/ili9341_graph.c
         ${ILI9341_SRC}/ili9341_spi.c
         ${ILI9341_SRC}/ili9341_text.c
+        # XPT2046 driver
+        ${XPT2046_SRC}/xpt2046.c
+        ${XPT2046_SRC}/touch_calib.c
+        ${XPT2046_SRC}/ili9341_touch_calib.c
         # Rest source files
         syscalls.c
         main.c

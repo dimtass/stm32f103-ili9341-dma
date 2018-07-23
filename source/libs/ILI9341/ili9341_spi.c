@@ -1,15 +1,15 @@
 #include "ili9341_spi.h"
 
 #define DMA_BUF_SIZE 2048
-u16 dmaBufIndex = 0;
-u16 dmaBuffer[DMA_BUF_SIZE];
+static uint16_t dmaBufIndex = 0;
+static uint16_t dmaBuffer[DMA_BUF_SIZE] = {0};
 
 struct dev_spi gspi;
 struct dev_spi * m_spi = &gspi;
 
 void ili9341_spi_init(void)
 {
-	dev_spi_init(m_spi, DEV_SPI1_GPIOA);
+	dev_spi_init(m_spi, DEV_SPI1_GPIOA, SPI_MODE_3, SPI_BaudRatePrescaler_2);
 
 	GPIO_InitTypeDef gpioStructure;
 

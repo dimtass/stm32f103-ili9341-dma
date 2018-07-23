@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
+#include "xpt2046.h"
 
 /**
  * @brief  This function handles NMI exception.
@@ -115,12 +116,22 @@ void PendSV_Handler(void)
  */
 void SysTick_Handler(void)
 {
-	glb.tmr_1ms++;
 	glb.tmr_10ms++;
 	if ((glb.tmr_1000ms++) >= 1000) {
 		glb.tmr_1000ms = 0;
-		glb.fps_done = glb.fps;
-		glb.fps = 0;
+		glb.fps = glb.fps_cntr;
+		glb.fps_cntr = 0;
+		glb.trace_fps = 1;
 	}
 }
 
+
+void EXTI9_5_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(EXTI_Line8) != RESET)
+	{
+		glb.touch_irq = 1;
+		/* Clear the  EXTI line 8 pending bit */
+		EXTI_ClearITPendingBit(EXTI_Line8);
+	}
+}

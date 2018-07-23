@@ -7,9 +7,9 @@
 
 #include "dev_spi.h"
 
-void* dev_spi_init(struct dev_spi * spi, enum en_spi_mode mode)
+void* dev_spi_init(struct dev_spi * spi, enum en_spi_port port, enum en_spi_mode mode, uint16_t spi_baudrate_prescaller)
 {
-	if (mode == DEV_SPI1_GPIOA) {
+	if (port == DEV_SPI1_GPIOA) {
 		spi->spi = SPI1;
 		spi->port = GPIOA;
 		spi->nss = GPIO_Pin_4;
@@ -25,7 +25,7 @@ void* dev_spi_init(struct dev_spi * spi, enum en_spi_mode mode)
 		/* RCC configuration */
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_SPI1, ENABLE);
 	}
-	else if (mode == DEV_SPI1_GPIOB) {
+	else if (port == DEV_SPI1_GPIOB) {
 		spi->spi = SPI1;
 		spi->port = GPIOB;
 		spi->nss = GPIO_Pin_2;
@@ -34,11 +34,13 @@ void* dev_spi_init(struct dev_spi * spi, enum en_spi_mode mode)
 		spi->mosi = GPIO_Pin_5;
 		spi->dma_rx_ch = DMA1_Channel2;
 		spi->dma_rx_flags = DMA1_FLAG_TC2;
+		spi->dma_rx_iqrn = DMA1_Channel2_IRQn;
 		spi->dma_tx_ch = DMA1_Channel3;
 		spi->dma_tx_flags = DMA1_FLAG_TC3;
+		spi->dma_tx_iqrn = DMA1_Channel3_IRQn;
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_SPI1 | RCC_APB2Periph_AFIO, ENABLE);
 	}
-	else if (mode == DEV_SPI2) {
+	else if (port == DEV_SPI2) {
 		spi->spi = SPI2;
 		spi->port = GPIOB;
 		spi->nss = GPIO_Pin_12;
@@ -47,8 +49,10 @@ void* dev_spi_init(struct dev_spi * spi, enum en_spi_mode mode)
 		spi->mosi = GPIO_Pin_15;
 		spi->dma_rx_ch = DMA1_Channel4;
 		spi->dma_rx_flags = DMA1_FLAG_TC4;
+		spi->dma_rx_iqrn = DMA1_Channel4_IRQn;
 		spi->dma_tx_ch = DMA1_Channel5;
 		spi->dma_tx_flags = DMA1_FLAG_TC5;
+		spi->dma_tx_iqrn = DMA1_Channel5_IRQn;
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
 	}
@@ -74,12 +78,30 @@ void* dev_spi_init(struct dev_spi * spi, enum en_spi_mode mode)
     spi->spi_struct.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     spi->spi_struct.SPI_Mode = SPI_Mode_Master;
     spi->spi_struct.SPI_DataSize = SPI_DataSize_8b;
-    spi->spi_struct.SPI_CPOL = SPI_CPOL_High;
-    spi->spi_struct.SPI_CPHA = SPI_CPHA_2Edge;
     spi->spi_struct.SPI_NSS = SPI_NSS_Soft;
-    spi->spi_struct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
-//    spi->spi_struct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
+    spi->spi_struct.SPI_BaudRatePrescaler = spi_baudrate_prescaller; //SPI_BaudRatePrescaler_2;
     spi->spi_struct.SPI_FirstBit = SPI_FirstBit_MSB;
+    switch (mode) {
+    case SPI_MODE_0:
+        spi->spi_struct.SPI_CPOL = SPI_CPOL_Low;
+        spi->spi_struct.SPI_CPHA = SPI_CPHA_1Edge;
+    	break;
+    case SPI_MODE_1:
+        spi->spi_struct.SPI_CPOL = SPI_CPOL_Low;
+        spi->spi_struct.SPI_CPHA = SPI_CPHA_2Edge;
+    	break;
+    case SPI_MODE_2:
+        spi->spi_struct.SPI_CPOL = SPI_CPOL_High;
+        spi->spi_struct.SPI_CPHA = SPI_CPHA_1Edge;
+    	break;
+    case SPI_MODE_3:
+        spi->spi_struct.SPI_CPOL = SPI_CPOL_High;
+        spi->spi_struct.SPI_CPHA = SPI_CPHA_2Edge;
+    	break;
+    default:
+        spi->spi_struct.SPI_CPOL = SPI_CPOL_Low;
+        spi->spi_struct.SPI_CPHA = SPI_CPHA_2Edge;
+    };
 	SPI_CalculateCRC(spi->spi, DISABLE);
     SPI_Init(spi->spi, &spi->spi_struct);
     SPI_Cmd(spi->spi, ENABLE);
@@ -239,7 +261,7 @@ inline void dev_spi_send16(struct dev_spi * spi, uint16_t *data, size_t data_len
     dev_spi_tx(spi);
 }
 
-inline void dev_spi_recv16(struct dev_spi * spi, uint8_t * data, size_t data_len)
+inline void dev_spi_recv16(struct dev_spi * spi, uint16_t * data, size_t data_len)
 {
 	/* Configure Rx DMA */
 	spi->dma_struct.DMA_MemoryBaseAddr = (uint32_t)(data);
