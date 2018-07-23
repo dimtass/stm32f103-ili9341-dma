@@ -160,7 +160,7 @@ int main(void)
 
     /* default mode is benchmark */
     glb.mode = MODE_BENCHMARK;
-    glb.mode = MODE_TOUCH_CALIBRATION;
+//    glb.mode = MODE_TOUCH_CALIBRATION;
 
     /* Initialize touch */
     struct touch_settings ts = {
